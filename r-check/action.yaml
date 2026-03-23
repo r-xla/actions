@@ -1,0 +1,48 @@
+name: 'R CMD check'
+description: 'Common steps for R package checking (requires checkout and setup-r first)'
+
+inputs:
+  install-torch:
+    description: 'Whether to install torch'
+    required: false
+    default: 'false'
+  depends-only:
+    description: 'Whether to only test with Depends (no Suggests)'
+    required: false
+    default: 'false'
+  extra-deps:
+    description: 'Extra bash commands to run after R dependency installation'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: r-lib/actions/setup-pandoc@v2
+
+    - uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        extra-packages: any::rcmdcheck
+        needs: check
+        cache: false
+
+    - name: Install extra dependencies
+      if: inputs.extra-deps != ''
+      shell: bash
+      run: ${{ inputs.extra-deps }}
+
+    - name: Install torch
+      if: inputs.install-torch == 'true'
+      shell: bash
+      run: |
+        Rscript -e 'install.packages("torch")'
+        Rscript -e 'torch::install_torch()'
+
+    - uses: r-lib/actions/check-r-package@v2
+      with:
+        upload-snapshots: true
+        build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+        upload-results: true
+      env:
+        _R_CHECK_DEPENDS_ONLY_: ${{ inputs.depends-only == 'true' && 'TRUE' || 'FALSE' }}
+        NOT_CRAN: ${{ inputs.depends-only == 'true' && 'FALSE' || 'TRUE' }}
