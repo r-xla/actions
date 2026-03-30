@@ -22,6 +22,10 @@ inputs:
     description: 'Config/Needs/* groups to install (passed to setup-r-dependencies)'
     required: false
     default: 'check'
+  extra-packages:
+    description: 'Extra packages to install (passed to setup-r-dependencies)'
+    required: false
+    default: 'any::rcmdcheck'
 
 runs:
   using: 'composite'
@@ -45,7 +49,7 @@ runs:
 
     - uses: r-lib/actions/setup-r-dependencies@v2
       with:
-        extra-packages: any::rcmdcheck
+        extra-packages: ${{ inputs.extra-packages }}
         needs: ${{ inputs.needs }}
         cache: false
 
