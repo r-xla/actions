@@ -4,6 +4,9 @@ on:
       extra-repositories:
         type: string
         default: 'https://r-xla.r-universe.dev'
+      extra-packages:
+        type: string
+        default: ''
       setup-pjrt:
         type: boolean
         default: false
@@ -35,7 +38,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::pkgdown, cuda12.8=?ignore
+          extra-packages: "any::pkgdown ${{ inputs.extra-packages }}"
           needs: website
 
       - name: Install package
