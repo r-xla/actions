@@ -29,19 +29,19 @@ runs:
     - uses: r-lib/actions/setup-pandoc@v2
 
     - name: Configure Additional_repositories from DESCRIPTION
-      shell: bash
+      shell: Rscript {0}
       run: |
-        Rscript -e '
-          repos <- read.dcf("DESCRIPTION", fields = "Additional_repositories")
-          if (!is.na(repos)) {
-            urls <- trimws(strsplit(repos, ",")[[1]])
-            profile <- file.path(Sys.getenv("HOME"), ".Rprofile")
-            existing <- if (file.exists(profile)) readLines(profile) else character()
-            line <- sprintf("options(repos = c(getOption(\"repos\"), %s))",
-                            paste(sprintf("\"%s\"", urls), collapse = ", "))
-            writeLines(c(existing, line), profile)
-          }
-        '
+        repos <- read.dcf("DESCRIPTION", fields = "Additional_repositories")
+        if (!is.na(repos)) {
+          urls <- trimws(strsplit(repos, ",")[[1]])
+          profile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+          existing <- if (file.exists(profile)) readLines(profile) else character()
+          line <- sprintf(
+            'options(repos = c(getOption("repos"), %s))',
+            paste(sprintf('"%s"', urls), collapse = ", ")
+          )
+          writeLines(c(existing, line), profile)
+        }
 
     - uses: r-lib/actions/setup-r-dependencies@v2
       with:
