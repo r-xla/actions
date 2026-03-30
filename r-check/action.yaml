@@ -22,10 +22,6 @@ inputs:
     description: 'Config/Needs/* groups to install (passed to setup-r-dependencies)'
     required: false
     default: 'check'
-  extra-repositories:
-    description: 'Additional CRAN-like repositories for dependency resolution'
-    required: false
-    default: ''
 
 runs:
   using: 'composite'
