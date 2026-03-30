@@ -14,6 +14,14 @@ inputs:
     description: 'Extra bash commands to run after R dependency installation'
     required: false
     default: ''
+  as-cran:
+    description: 'Whether to use --as-cran flag for R CMD check'
+    required: false
+    default: 'true'
+  needs:
+    description: 'Config/Needs/* groups to install (passed to setup-r-dependencies)'
+    required: false
+    default: 'check'
 
 runs:
   using: 'composite'
@@ -23,7 +31,7 @@ runs:
     - uses: r-lib/actions/setup-r-dependencies@v2
       with:
         extra-packages: any::rcmdcheck
-        needs: check
+        needs: ${{ inputs.needs }}
         cache: false
 
     - name: Install extra dependencies
@@ -41,6 +49,7 @@ runs:
     - uses: r-lib/actions/check-r-package@v2
       with:
         upload-snapshots: true
+        args: ${{ inputs.as-cran == 'true' && 'c("--no-manual", "--as-cran")' || 'c("--no-manual")' }}
         build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
         upload-results: true
       env:
