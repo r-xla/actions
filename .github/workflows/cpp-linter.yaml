@@ -4,6 +4,9 @@ on:
       extra-repositories:
         type: string
         default: 'https://r-xla.r-universe.dev'
+      extra-packages:
+        type: string
+        default: ''
 
 name: Lint C++ Code
 
@@ -21,7 +24,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           cache: false
-          extra-packages: any::devtools
+          extra-packages: "any::devtools ${{ inputs.extra-packages }}"
 
       - name: Create compile_commands.json
         run: Rscript -e "devtools::load_all()"
