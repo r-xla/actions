@@ -22,11 +22,30 @@ inputs:
     description: 'Config/Needs/* groups to install (passed to setup-r-dependencies)'
     required: false
     default: 'check'
+  extra-repositories:
+    description: 'Additional CRAN-like repositories for dependency resolution'
+    required: false
+    default: ''
 
 runs:
   using: 'composite'
   steps:
     - uses: r-lib/actions/setup-pandoc@v2
+
+    - name: Configure Additional_repositories from DESCRIPTION
+      shell: bash
+      run: |
+        Rscript -e '
+          repos <- read.dcf("DESCRIPTION", fields = "Additional_repositories")
+          if (!is.na(repos)) {
+            urls <- trimws(strsplit(repos, ",")[[1]])
+            profile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+            existing <- if (file.exists(profile)) readLines(profile) else character()
+            line <- sprintf("options(repos = c(getOption(\"repos\"), %s))",
+                            paste(sprintf("\"%s\"", urls), collapse = ", "))
+            writeLines(c(existing, line), profile)
+          }
+        '
 
     - uses: r-lib/actions/setup-r-dependencies@v2
       with:
