@@ -14,16 +14,43 @@ inputs:
     description: 'Extra bash commands to run after R dependency installation'
     required: false
     default: ''
+  as-cran:
+    description: 'Whether to use --as-cran flag for R CMD check'
+    required: false
+    default: 'true'
+  needs:
+    description: 'Config/Needs/* groups to install (passed to setup-r-dependencies)'
+    required: false
+    default: 'check'
+  extra-packages:
+    description: 'Extra packages to install (passed to setup-r-dependencies)'
+    required: false
+    default: 'any::rcmdcheck'
 
 runs:
   using: 'composite'
   steps:
     - uses: r-lib/actions/setup-pandoc@v2
 
+    - name: Configure Additional_repositories from DESCRIPTION
+      shell: Rscript {0}
+      run: |
+        repos <- read.dcf("DESCRIPTION", fields = "Additional_repositories")
+        if (!is.na(repos)) {
+          urls <- trimws(strsplit(repos, ",")[[1]])
+          profile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+          existing <- if (file.exists(profile)) readLines(profile) else character()
+          line <- sprintf(
+            'options(repos = c(getOption("repos"), %s))',
+            paste(sprintf('"%s"', urls), collapse = ", ")
+          )
+          writeLines(c(existing, line), profile)
+        }
+
     - uses: r-lib/actions/setup-r-dependencies@v2
       with:
-        extra-packages: any::rcmdcheck
-        needs: check
+        extra-packages: ${{ inputs.extra-packages }}
+        needs: ${{ inputs.needs }}
         cache: false
 
     - name: Install extra dependencies
@@ -41,6 +68,7 @@ runs:
     - uses: r-lib/actions/check-r-package@v2
       with:
         upload-snapshots: true
+        args: ${{ inputs.as-cran == 'true' && 'c("--no-manual", "--as-cran")' || 'c("--no-manual")' }}
         build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
         upload-results: true
       env:

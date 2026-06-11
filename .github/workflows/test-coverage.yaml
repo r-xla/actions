@@ -6,6 +6,7 @@ on:
         default: 'https://r-xla.r-universe.dev'
       env-vars:
         description: 'Newline-separated KEY=VALUE environment variables to set for the run (e.g. PJRT_TEST=1).'
+      extra-packages:
         type: string
         default: ''
 
@@ -35,7 +36,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::covr, any::xml2
+          extra-packages: "any::covr, any::xml2 ${{ inputs.extra-packages }}"
           needs: coverage
           cache: false
 
