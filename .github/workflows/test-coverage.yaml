@@ -4,6 +4,10 @@ on:
       extra-repositories:
         type: string
         default: 'https://r-xla.r-universe.dev'
+      env-vars:
+        description: 'Newline-separated KEY=VALUE environment variables to set for the run (e.g. PJRT_TEST=1).'
+        type: string
+        default: ''
 
 name: test-coverage.yaml
 
@@ -17,6 +21,11 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+      - name: Set environment variables
+        if: inputs.env-vars != ''
+        run: printf '%s\n' "${{ inputs.env-vars }}" >> "$GITHUB_ENV"
+        shell: bash
+
       - uses: actions/checkout@v5
 
       - uses: r-lib/actions/setup-r@v2
