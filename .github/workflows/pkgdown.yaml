@@ -25,6 +25,9 @@ jobs:
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      # Allow pjrt to download the plugin in the non-interactive CI session,
+      # both in the setup step below and while rendering vignettes.
+      PJRT_INSTALL: "1"
 
     steps:
       - uses: actions/checkout@v5
